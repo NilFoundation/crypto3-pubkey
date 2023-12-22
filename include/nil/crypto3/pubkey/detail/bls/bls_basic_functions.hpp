@@ -26,6 +26,13 @@
 #ifndef CRYPTO3_PUBKEY_BLS_CORE_FUNCTIONS_HPP
 #define CRYPTO3_PUBKEY_BLS_CORE_FUNCTIONS_HPP
 
+
+#ifdef __ZKLLVM__
+    #include <nil/crypto3/algebra/fields/bls12/base_field.hpp>
+    #include <nil/crypto3/algebra/curves/bls12.hpp>
+    #include <nil/crypto3/algebra/algorithms/pair.hpp>
+#else
+
 #include <utility>
 #include <vector>
 #include <array>
@@ -44,10 +51,38 @@
 
 #include <nil/crypto3/detail/type_traits.hpp>
 
+#endif
 namespace nil {
     namespace crypto3 {
         namespace pubkey {
             namespace detail {
+#ifdef __ZKLLVM__
+                namespace bls_basic_functions {
+                    static inline bool verify(
+                        typename algebra::fields::bls12_base_field<381>::value_type hashed_msg,
+                        typename algebra::curves::bls12<381>::template g2_type<>::value_type pubkey,
+                        typename algebra::curves::bls12<381>::template g1_type<>::value_type sig) {
+
+                            typename algebra::curves::bls12<381>::template g1_type<>::value_type msg_point = __builtin_assigner_hash_to_curve(hashed_msg);
+
+                            // __builtin_assigner_exit_check(__builtin_assigner_is_in_g1_check(sig));
+                            // __builtin_assigner_exit_check(__builtin_assigner_is_in_g2_check(pubkey));
+
+                            typename algebra::curves::bls12<381>::template g2_type<>::value_type g2_group_generator = algebra::curves::bls12<381>::template g2_type<>::one();
+
+                            typename algebra::curves::bls12<381>::gt_type::value_type pairing1 = algebra::pair<algebra::curves::bls12<381>>(sig, g2_group_generator);
+                            typename algebra::curves::bls12<381>::gt_type::value_type pairing2 = algebra::pair<algebra::curves::bls12<381>>(msg_point, pubkey);
+
+                            bool are_equal = 0;
+                            for (std::size_t i = 0; i < 12; i++) {
+                                are_equal = are_equal && (pairing1[i] == pairing2[i]);
+                            }
+                            // __builtin_assigner_exit_check(are_equal);
+
+                            return are_equal;
+                        }
+                }
+#else
                 template<typename policy_type>
                 struct bls_basic_functions {
                     typedef typename policy_type::curve_type curve_type;
@@ -221,6 +256,7 @@ namespace nil {
                         return bls_serializer::point_to_octets_compress(sig);
                     }
                 };
+#endif
             }    // namespace detail
         }        // namespace pubkey
     }            // namespace crypto3
