@@ -34,7 +34,10 @@ option(BUILD_EXAMPLES "Build examples" FALSE)
 list(APPEND ${CURRENT_PROJECT_NAME}_LIBRARIES
      ${CMAKE_WORKSPACE_NAME}::algebra
      # TODO: add conditional link of zk depending on ElGamal
-     ${CMAKE_WORKSPACE_NAME}::zk)
+    # Can't depend on zk here, we need the ability to swap this to actor version.
+    # Add a dependency in the final executable.
+    # ${CMAKE_WORKSPACE_NAME}::zk
+    )
 
 list(APPEND ${CURRENT_PROJECT_NAME}_PUBLIC_HEADERS
      include/nil/crypto3/pubkey/algorithm/sign.hpp
