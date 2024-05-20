@@ -16,15 +16,13 @@ endif()
 
 cm_project(pubkey WORKSPACE_NAME ${CMAKE_WORKSPACE_NAME})
 
-cm_find_package(CM)
 include(CMDeploy)
 include(CMSetupVersion)
 
 if(NOT Boost_FOUND AND NOT CMAKE_CROSSCOMPILING)
-    cm_find_package(Boost REQUIRED)
+    find_package(Boost REQUIRED)
 endif()
 
-option(BUILD_TESTS "Build unit tests" FALSE)
 option(BUILD_EXAMPLES "Build examples" FALSE)
 
 list(APPEND ${CURRENT_PROJECT_NAME}_LIBRARIES
@@ -119,9 +117,8 @@ cm_deploy(TARGETS ${CMAKE_WORKSPACE_NAME}_${CURRENT_PROJECT_NAME}
         INCLUDE include
         NAMESPACE ${CMAKE_WORKSPACE_NAME}::)
 
-if(BUILD_TESTS)
-    add_subdirectory(test)
-endif()
+include(CMTest)
+cm_add_test_subdirectory(test)
 
 if(BUILD_EXAMPLES)
     add_subdirectory(example)
